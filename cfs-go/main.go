@@ -52,7 +52,7 @@ func run() {
 func child() {
 	fmt.Printf("Running [child]: %v as %d\n", os.Args[2:], os.Getpid())
 
-	cg()
+	setupCgroups()
 
 	// should already be in new namespace
 	syscall.Sethostname([]byte("container"))
@@ -70,19 +70,22 @@ func child() {
 	syscall.Unmount("/proc", 0)
 }
 
-func cg() {
+func setupCgroups() {
+	// Linux docs: https://man7.org/linux/man-pages/man7/cgroups.7.html
+
+	// Path to the cgroup virtual filesystem
 	cgroups := "/sys/fs/cgroup/"
 	pids := filepath.Join(cgroups, "pids")
-	err := os.Mkdir(filepath.Join(pids, "cam"), 0755)
-	if err != nil && os.IsExist(err) {
-		panic(err)
-	}
+	_ = os.Mkdir(filepath.Join(pids, "cam"), 0755)
+	// explicitly ignore error, if we run multiple times it's fine if this fails
 
 	// make a limit of 20 processes
 	must(ioutil.WriteFile(filepath.Join(pids, "cam/pids.max"), []byte("20"), 0700))
 
 	// Removes the new cgroup in place after the container exists
 	must(ioutil.WriteFile(filepath.Join(pids, "cam/notify_on_release"), []byte("1"), 0700))
+
+	// Adds current process (the child process) to the `cam` cgroup by writing the current PID into the `cam` cgroup's `cgroup.procs` file
 	must(ioutil.WriteFile(filepath.Join(pids, "cam/cgroup.procs"), []byte(strconv.Itoa(os.Getpid())), 0700))
 }
 
