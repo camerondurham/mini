@@ -1,2 +1,3 @@
 cfs-go/ubuntufs.tar
 .DS_Store
+*.o
