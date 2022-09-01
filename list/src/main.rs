@@ -12,7 +12,6 @@ struct Node<T> {
 }
 
 
-// TODO: 
 impl<T> List<T> {
     pub fn new() -> Self {
         List { head: None }
@@ -38,7 +37,13 @@ impl<T> List<T> {
     }
     
     pub fn contains(&self, item: T) -> bool {
-        todo!()
+        match &self.head {
+            None => return false,
+            Some(node) => {
+                let cur = node;
+                return false;
+            }
+        }
     }
 }
 
@@ -47,6 +52,8 @@ fn main() {
   l.push(42);
   l.push(43);
   l.push(44);
-  println!("{l:?}") 
+  println!("{l:?}");
+
+  l.contains(33);
 }
 
